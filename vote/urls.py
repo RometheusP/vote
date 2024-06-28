@@ -16,12 +16,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from polls.views import show_subjects, show_teachers, export_teachers_excel
+from polls import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', show_subjects),
-    path('teachers/', show_teachers),
-    path('excel/', export_teachers_excel),
-
+    path('', views.show_subjects),
+    path('teachers/', views.show_teachers),
+    path('excel/', views.export_teachers_excel),
+    path('teachers_data/', views.get_teachers_data),
+    path('praise/', views.praise_or_criticize),
+    path('criticize/', views.praise_or_criticize),
+    path('login.html', views.log),
+    path('captcha/', views.get_captcha),
+    path('login/', views.get_captcha),
 ]

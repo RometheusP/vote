@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect
 from polls.Captcha import Captcha
 from polls.models import Subject, Teacher, User
 from polls.utils import gen_md5_digest, gen_random_code
+from reportlab.pdfgen import canvas
 
 
 def show_subjects(request):
@@ -54,6 +55,10 @@ def praise_or_criticize(request: HttpRequest) -> HttpResponse:
     else:
         data = {'code': 20002, 'mesg': '请先登录'}
     return JsonResponse(data)
+
+
+def log(request):
+    return render(request, 'login.html')
 
 
 def login(request: HttpRequest) -> HttpResponse:
@@ -131,3 +136,11 @@ def export_pdf(request: HttpRequest) -> HttpResponse:
     resp = HttpResponse(buffer.getvalue(), content_type='application/pdf')
     resp['content-disposition'] = 'inline; filename="demo.pdf"'
     return resp
+
+
+def get_teachers_data(request):
+    queryset = Teacher.objects.all()
+    names = [teacher.name for teacher in queryset]
+    good_counts = [teacher.good_count for teacher in queryset]
+    bad_counts = [teacher.bad_count for teacher in queryset]
+    return JsonResponse({'names': names, 'good': good_counts, 'bad': bad_counts})
