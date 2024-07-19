@@ -21,7 +21,7 @@ def show_teachers(request):
     if request.session.get('userid'):
         try:
             sno = int(request.GET.get('sno'))
-            teachers = []
+            teachers, subject = [], []
             if sno:
                 subject = Subject.objects.only('name').get(no=sno)
                 teachers = Teacher.objects.filter(subject=subject).order_by('no')
