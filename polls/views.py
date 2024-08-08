@@ -36,25 +36,40 @@ def show_teachers(request):
         return JsonResponse(data)
         # return render(request, 'login.html', {'hint': "请先登录"})
 
-
 def praise_or_criticize(request: HttpRequest) -> HttpResponse:
-    if request.session.get('userid'):
-        try:
-            tno = int(request.GET.get('tno'))
-            teacher = Teacher.objects.get(no=tno)
-            if request.path.startswith('/praise/'):
-                teacher.good_count += 1
-                count = teacher.good_count
-            else:
-                teacher.bad_count += 1
-                count = teacher.bad_count
-            teacher.save()
-            data = {'code': 20000, 'mesg': '投票成功', 'count': count}
-        except (ValueError, Teacher.DoesNotExist):
-            data = {'code': 20001, 'mesg': '投票失败'}
+    # 验证session中的userid是否存在
+    if not request.session.get('userid'):
+        return JsonResponse({'code': 20002, 'mesg': '请先登录'})
+
+    # 获取tno参数并验证其有效性
+    tno_str = request.GET.get('tno')
+    if not tno_str or not tno_str.isdigit():
+        return JsonResponse({'code': 20001, 'mesg': '投票失败'})
+
+    tno = int(tno_str)
+
+    # 尝试获取Teacher对象
+    try:
+        teacher = Teacher.objects.get(no=tno)
+    except ObjectDoesNotExist:
+        return JsonResponse({'code': 20001, 'mesg': '投票失败'})
+
+    # 根据请求路径更新计数器
+    if request.path.startswith('/praise/'):
+        teacher.good_count += 1
+        count = teacher.good_count
+    elif request.path.startswith('/criticize/'):  # 明确批评路径
+        teacher.bad_count += 1
+        count = teacher.bad_count
     else:
-        data = {'code': 20002, 'mesg': '请先登录'}
-    return JsonResponse(data)
+        return JsonResponse({'code': 20001, 'mesg': '投票失败'})
+
+    # 保存数据
+    teacher.save()
+
+    # 返回结果
+    return JsonResponse({'code': 20000, 'mesg': '投票成功', 'count': count})
+
 
 
 def log(request):
